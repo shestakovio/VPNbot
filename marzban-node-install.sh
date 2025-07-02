@@ -41,8 +41,8 @@ echo
 echo "Сертификат успешно сохранён в /var/lib/marzban-node/ssl_client_cert.pem"
 
 echo "Установка NODE Exporter..."
-curl -fsSL https://raw.githubusercontent.com/shestakovio/VPNbot/refs/heads/main/node-exporter/docker-compose.yml -o /root/node-exporter/docker-compose.yml
 mkdir -p /root/node-exporter/
+curl -fsSL https://raw.githubusercontent.com/shestakovio/VPNbot/refs/heads/main/node-exporter/docker-compose.yml -o /root/node-exporter/docker-compose.yml
 
 docker compose up -d
 
