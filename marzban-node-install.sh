@@ -49,5 +49,5 @@ docker compose up -d
 echo "Запуск контейнеров через Docker Compose..."
 cd /root/Marzban-node
 docker compose up -d
-docker compose up -d -f /root/node-exporter/docker-compose.yml
+docker compose -f /root/node-exporter/docker-compose.yml up -d
 echo "Установка и запуск завершены успешно."
