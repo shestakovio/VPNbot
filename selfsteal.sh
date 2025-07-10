@@ -5,7 +5,7 @@
 
 set -e
 SCRIPT_VERSION="2.1.3"
-GITHUB_REPO="dignezzz/remnawave-scripts"
+GITHUB_REPO="shestakovio/VPNbot"
 UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPO/main/selfsteal.sh"
 SCRIPT_URL="$UPDATE_URL"  # Алиас для совместимости
 CONTAINER_NAME="caddy-selfsteal"
