@@ -6,14 +6,25 @@ HOST_DIR="/opt/caddy"
 CERTS_DIR="$HOST_DIR/certs"
 CADDYFILE="$HOST_DIR/Caddyfile"
 
-URL_KEY="https://raw.githubusercontent.com/epsiont/certs/refs/heads/main/STAR.portal-guard.com_key.txt?token=GHSAT0AAAAAADL5AEY6PR3K4NSCIEKRSVUA2GVOTZA"
-URL_CRT="https://raw.githubusercontent.com/epsiont/certs/refs/heads/main/STAR.portal-guard.com.crt?token=GHSAT0AAAAAADL5AEY6PKLOHXM5UDO2TJMG2GVOUXQ"
+# ✅ Укажи свой репозиторий и ветку
+REPO="epsiont/certs"
+BRANCH="main"
+
+KEY_SRC="STAR.portal-guard.com_key.txt"
+CRT_SRC="STAR.portal-guard.com.crt"
 
 KEY_NAME="STAR.portal-guard.com.key"
 CRT_NAME="STAR.portal-guard.com.crt"
 
 MARKER_START="# >>> SELF_STEAL_PORT BLOCK START"
 MARKER_END="# <<< SELF_STEAL_PORT BLOCK END"
+
+# Проверка токена
+if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+  echo "❌ Ошибка: переменная GITHUB_TOKEN не установлена!"
+  echo "Сделай: export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxx"
+  exit 1
+fi
 
 # 1. Добавляем volumes в docker-compose.yml
 if ! grep -q "./certs:/etc/caddy/certs" "$COMPOSE_FILE"; then
@@ -31,10 +42,23 @@ else
   echo "volumes уже есть в $COMPOSE_FILE"
 fi
 
-# 2. Скачиваем сертификаты
+# 2. Скачиваем сертификаты из приватного репо
 mkdir -p "$CERTS_DIR"
-curl -fsSL -o "$CERTS_DIR/$KEY_NAME" "$URL_KEY"
-curl -fsSL -o "$CERTS_DIR/$CRT_NAME" "$URL_CRT"
+
+echo "Качаю ключ..."
+curl -fsSL \
+  -H "Authorization: token $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github.v3.raw" \
+  "https://api.github.com/repos/$REPO/contents/$KEY_SRC?ref=$BRANCH" \
+  -o "$CERTS_DIR/$KEY_NAME"
+
+echo "Качаю сертификат..."
+curl -fsSL \
+  -H "Authorization: token $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github.v3.raw" \
+  "https://api.github.com/repos/$REPO/contents/$CRT_SRC?ref=$BRANCH" \
+  -o "$CERTS_DIR/$CRT_NAME"
+
 chmod 600 "$CERTS_DIR/$KEY_NAME"
 chmod 644 "$CERTS_DIR/$CRT_NAME"
 
@@ -73,7 +97,7 @@ fi
 echo "Пересобираю контейнер..."
 docker compose -f "$COMPOSE_FILE" up -d --force-recreate
 
-echo "Готово!"
-echo "✅ Сертификаты: $CERTS_DIR/$CRT_NAME, $CERTS_DIR/$KEY_NAME"
-echo "✅ Caddyfile:   $CADDYFILE"
-echo "✅ Контейнер пересобран"
+echo "✅ Готово!"
+echo "   Сертификаты: $CERTS_DIR/$CRT_NAME, $CERTS_DIR/$KEY_NAME"
+echo "   Caddyfile:   $CADDYFILE"
+echo "   Контейнер пересобран"
